@@ -16,7 +16,9 @@ if __name__ == "__main__":
         sys.exit(1)
 
     user_url = "https://jsonplaceholder.typicode.com/users/{}".format(user_id)
-    todos_url = "https://jsonplaceholder.typicode.com/todos?userId={}".format(user_id)
+    todos_url = (
+        "https://jsonplaceholder.typicode.com/todos?userId={}".format(user_id)
+    )
 
     with urlopen(user_url) as response:
         user = json.loads(response.read().decode("utf-8"))
