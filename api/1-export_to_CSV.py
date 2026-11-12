@@ -1,43 +1,24 @@
 #!/usr/bin/python3
-"""Export employee TODO tasks to a CSV file."""
-
+"""
+    python script that exports data in the CSV format
+"""
 import csv
-import json
-import sys
-from urllib.request import urlopen
+import requests
+from sys import argv
 
+if __name__ == '__main__':
+    if len(argv) != 2:
+        print("Usage: python 1-export_to_CSV.py <user_id>")
+        exit(1)
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.exit(1)
-
-    try:
-        user_id = int(sys.argv[1])
-    except ValueError:
-        sys.exit(1)
-
-    user_url = (
-        "https://jsonplaceholder.typicode.com/users/{}".format(user_id)
-    )
-    todos_url = (
-        "https://jsonplaceholder.typicode.com/todos?userId={}".format(user_id)
-    )
-
-    with urlopen(user_url) as response:
-        user = json.loads(response.read().decode("utf-8"))
-
-    with urlopen(todos_url) as response:
-        todos = json.loads(response.read().decode("utf-8"))
-
-    filename = "{}.csv".format(user_id)
-
-    with open(filename, "w") as csvfile:
-        writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
-
-        for task in todos:
-            writer.writerow([
-                user_id,
-                user.get("username"),
-                task.get("completed"),
-                task.get("title")
-            ])
+    userId = argv[1]
+    user = requests.get("https://jsonplaceholder.typicode.com/users/{}".
+                        format(userId), verify=False).json()
+    todo = requests.get("https://jsonplaceholder.typicode.com/todos?userId={}".
+                        format(userId), verify=False).json()
+    with open("{}.csv".format(userId), 'w', newline='') as csvfile:
+        taskwriter = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+        for task in todo:
+            taskwriter.writerow([int(userId), user.get('username'),
+                                 task.get('completed'),
+                                 task.get('title')])

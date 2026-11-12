@@ -1,34 +1,23 @@
 #!/usr/bin/python3
-"""Export TODO tasks for all employees to a JSON file."""
-
+"""
+    python script that exports data in the JSON format
+"""
 import json
-from urllib.request import urlopen
-
+import requests
 
 if __name__ == "__main__":
-    users_url = "https://jsonplaceholder.typicode.com/users"
-    todos_url = "https://jsonplaceholder.typicode.com/todos"
-
-    with urlopen(users_url) as response:
-        users = json.loads(response.read().decode("utf-8"))
-
-    with urlopen(todos_url) as response:
-        todos = json.loads(response.read().decode("utf-8"))
-
-    all_employees = {}
-
-    for user in users:
-        user_id = user.get("id")
-        username = user.get("username")
-        all_employees[str(user_id)] = []
-
-        for task in todos:
-            if task.get("userId") == user_id:
-                all_employees[str(user_id)].append({
-                    "username": username,
-                    "task": task.get("title"),
-                    "completed": task.get("completed")
-                })
+    url = "https://jsonplaceholder.typicode.com/"
+    users = requests.get(url + "users").json()
+    """
+        export to JSON
+    """
 
     with open("todo_all_employees.json", "w") as jsonfile:
-        json.dump(all_employees, jsonfile)
+        json.dump({
+            u.get("id"): [{
+                "task": t.get("title"),
+                "completed": t.get("completed"),
+                "username": u.get("username")
+            } for t in requests.get(url + "todos",
+                                    params={"userId": u.get("id")}).json()]
+            for u in users}, jsonfile)
